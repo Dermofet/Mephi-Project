@@ -1,6 +1,8 @@
+import time
 import requests
 import xlwt
 from selenium import webdriver
+import re
 
 
 URL = 'https://maps.googleapis.com/maps/api/place/textsearch/json'
@@ -43,12 +45,7 @@ def find_places(response_json):
     return data
 
 
-# def make_file_excel():
-#     wb = xlwt.Workbook()
-#     wb.save('ПП.xls')
-
-
-def open_excel_file(data, commercial_inf):
+def open_excel_file(data, commercial_inf, name_excel_file):
     wb = xlwt.Workbook()
     sheet = wb.add_sheet('GM_Parser')
     sheet.write(0, 0, label='Название')
@@ -57,9 +54,10 @@ def open_excel_file(data, commercial_inf):
     sheet.write(0, 3, label='Рейтинг')
     sheet.write(0, 4, label='User Ratings Total')
     sheet.write(0, 5, label='ИНН')
-    sheet.write(0, 6, label='ОГРН')
-    sheet.write(0, 7, label='Уставной капитал')
-    sheet.write(0, 8, label='Активы')
+    sheet.write(0, 6, label='КПП')
+    sheet.write(0, 7, label='ОГРН')
+    sheet.write(0, 8, label='Уставной капитал')
+    sheet.write(0, 9, label='Активы')
     for t, i in enumerate(data['dict_name']):
         sheet.write(t + 1, 0, label=i)
     for t, i in enumerate(data['dict_address']):
@@ -72,13 +70,15 @@ def open_excel_file(data, commercial_inf):
         sheet.write(t + 1, 4, label=i)
     for t, i in enumerate(commercial_inf['inn']):
         sheet.write(t + 1, 5, label=i)
-    for t, i in enumerate(commercial_inf['ogrn']):
+    for t, i in enumerate(commercial_inf['kpp']):
         sheet.write(t + 1, 6, label=i)
-    for t, i, k in enumerate(zip(commercial_inf['capital_number'], commercial_inf['capital_words'])):
-        sheet.write(t + 1, 7, label=i + ' ' + k)
-    for t, i, k in enumerate(zip(commercial_inf['assets_number'], commercial_inf['assets_words'])):
-        sheet.write(t + 1, 8, label=i + ' ' + k)
-    wb.save('GM_Parser')
+    for t, i in enumerate(commercial_inf['ogrn']):
+        sheet.write(t + 1, 7, label=i)
+    for t, i in enumerate(commercial_inf['capital']):
+        sheet.write(t + 1, 8, label=i)
+    for t, i in enumerate(commercial_inf['assets']):
+        sheet.write(t + 1, 9, label=i)
+    wb.save(name_excel_file)
 
 
 # def write_data_txt(data, inn):
@@ -102,7 +102,15 @@ def open_excel_file(data, commercial_inf):
 #     file.close()
 
 
-def parsing_GM(location, radius, keyword):
+def check(name):
+    en_let = 0
+    if re.search(r'[a-z]', name):
+        en_let = en_let + 1
+    print('en_let = ', en_let)
+    return en_let
+
+
+def parsing_GM(location, radius, keyword, name_excel_file):
     payload = {'query': keyword, 'location': location, 'radius': radius, 'language': language, 'key': key}
     response = requests.get(URL, params=payload)
     response_json = response.json()
@@ -111,43 +119,48 @@ def parsing_GM(location, radius, keyword):
     inn = []
     kpp = []
     ogrn = []
-    capital_number = []
-    capital_words = []
-    assets_number = []
-    assets_words = []
+    capital = []
+    assets = []
     driver.get('https://bo.nalog.ru/')
     for i, t in zip(data['dict_name'], data['dict_address']):
-        button_extended_search = driver.find_elements_by_xpath('//*[@id="root"]/main/div/button')
-        driver.execute_script("arguments[0].click", button_extended_search)
-        button_clear = driver.find_element_by_xpath('//*[@id="root"]/main/div/div/form/div[3]/button[2]')
-        driver.execute_script("arguments[0].click", button_clear)
-        driver.find_element_by_xpath('//*[@id="name"]').send_keys(i)
-        driver.find_element_by_xpath('//*[@id="address"]').send_keys(t)
+        time.sleep(5)
+        button_extended_search = driver.find_elements_by_tag_name('button')[3]
+        driver.execute_script("arguments[0].click();", button_extended_search)
+        button_search = driver.find_elements_by_tag_name('button')[6]
+        driver.execute_script("arguments[0].click();", button_search)
+        driver.find_element_by_id('name').send_keys(i)
+        driver.find_element_by_id('address').send_keys(t)
         button_search_all_fields = driver.find_element_by_class_name('form-item-checkbox_checkbox')
-        driver.execute_script("arguments[0].click", button_search_all_fields)
-        button_search = driver.find_element_by_xpath('//*[@id="root"]/main/div/div/form/div[3]/button[1]')
-        driver.execute_script("arguments[0].click", button_search)
-        elem = driver.find_element_by_xpath('//*[@id="root"]/main/div/div/div[2]/div[2]/a[1]')
-        driver.execute_script("arguments[0].click", elem)
-        inn_elem = driver.find_element_by_xpath('//*[@id="root"]/main/div[1]/div[1]/div/div[3]/div[1]/div[2]/div[1]/div[1]/div/p').text
-        print(inn_elem)
-        inn.append(inn_elem)
-        kpp_elem = driver.find_element_by_xpath('//*[@id="root"]/main/div[1]/div[1]/div/div[3]/div[1]/div[2]/div[1]/div[2]/div/p').text
-        kpp.append(kpp_elem)
-        ogrn_elem = driver.find_element_by_xpath('//*[@id="root"]/main/div[1]/div[1]/div/div[3]/div[1]/div[2]/div[1]/div[3]/div/p').text
-        ogrn.append(ogrn_elem)
-        capital_elem_number = driver.find_element_by_xpath('//*[@id="root"]/main/div[1]/div[1]/div/div[3]/div[2]/div[1]/div[2]/span').text
-        capital_number.append(capital_elem_number)
-        capital_elem_words = driver.find_element_by_xpath('//*[@id="root"]/main/div[1]/div[1]/div/div[3]/div[2]/div[1]/div[2]/sup').text
-        capital_words.append(capital_elem_words)
-        assets_elem_number = driver.find_element_by_xpath('//*[@id="root"]/main/div[1]/div[1]/div/div[3]/div[2]/div[2]/div[2]/span').text
-        assets_number.append(assets_elem_number)
-        assets_elem_words = driver.find_element_by_xpath('//*[@id="root"]/main/div[1]/div[1]/div/div[3]/div[2]/div[2]/div[2]/sup').text
-        assets_words.append(assets_elem_words)
+        driver.execute_script("arguments[0].click();", button_search_all_fields)
+        button_search = driver.find_elements_by_tag_name('button')[5]
+        driver.execute_script("arguments[0].click();", button_search)
+        time.sleep(5)
+        if check(i) == 0:
+            elem = driver.find_element_by_xpath('//*[@id="root"]/main/div/div/div[2]/div[2]/a[1]').get_attribute('href')
+            print(elem)
+            driver.get(elem)
+            time.sleep(5)
+            inn_elem = driver.find_elements_by_class_name('header-card-content-item__text')[3].text
+            print(inn_elem)
+            inn.append(inn_elem)
+            kpp_elem = driver.find_elements_by_class_name('header-card-content-item__text')[4].text
+            kpp.append(kpp_elem)
+            ogrn_elem = driver.find_elements_by_class_name('header-card-content-item__text')[5].text
+            ogrn.append(ogrn_elem)
+            capital_elem = driver.find_elements_by_class_name('item-number__main')[0].text
+            capital.append(capital_elem)
+            assets_elem = driver.find_elements_by_class_name('item-number__main')[1].text
+            assets.append(assets_elem)
+        else:
+            inn.append('')
+            kpp.append('')
+            ogrn.append('')
+            capital.append('')
+            assets.append('')
     driver.close()
     print('inn = ', inn)
-    commercial_inf = {'inn': inn, 'orgn': ogrn, 'capital_number': capital_number, 'capital_words': capital_words, 'assets_number': assets_number, 'assets_words': assets_words}
-    open_excel_file(data, commercial_inf)
+    commercial_inf = {'inn': inn, 'kpp': kpp, 'ogrn': ogrn, 'capital': capital, 'assets': assets}
+    open_excel_file(data, commercial_inf, name_excel_file)
     # write_data_txt(data, commercial_inf)
 
 
@@ -158,8 +171,10 @@ def main():
     radius = input()
     print('Введите ключевое слово')
     keyword = input()
+    print('Введите названия Excel-файла вместе с расширением файла (.xls). Например "GM_Parser.xls"')
+    name_excel_file = input()
     # make_file_excel()
-    parsing_GM(location, radius, keyword)
+    parsing_GM(location, radius, keyword, name_excel_file)
     while True:
         print('Хотите продолжить? Yes/No')
         answer = input()
@@ -171,7 +186,9 @@ def main():
                 keyword = None
                 print('Введите ключевое слово')
                 keyword = input()
-                parsing_GM(location, radius, keyword)
+                print('Введите названия Excel-файла вместе с расширением файла (.xls). Например "GM_Parser.xls"')
+                name_excel_file = input()
+                parsing_GM(location, radius, keyword, name_excel_file)
             else:
                 answer = None
                 print('Если хотите изменить значений всех переменных - напишите "Yes" (без кавычек).')
@@ -189,17 +206,23 @@ def main():
                     radius = input()
                     print('Введите ключевое слово')
                     keyword = input()
-                    parsing_GM(location, radius, keyword)
+                    print('Введите названия Excel-файла вместе с расширением файла (.xls). Например "GM_Parser.xls"')
+                    name_excel_file = input()
+                    parsing_GM(location, radius, keyword, name_excel_file)
                 if answer == 'location':
                     location = None
                     print('Введите через запятую координаты точки, относительно которой будет произведен поиск')
                     location = input()
-                    parsing_GM(location, radius, keyword)
+                    print('Введите названия Excel-файла вместе с расширением файла (.xls). Например "GM_Parser.xls"')
+                    name_excel_file = input()
+                    parsing_GM(location, radius, keyword, name_excel_file)
                 if answer == 'radius':
                     radius = None
                     print('Введите радиус поиска')
                     radius = input()
-                    parsing_GM(location, radius, keyword)
+                    print('Введите названия Excel-файла вместе с расширением файла (.xls). Например "GM_Parser.xls"')
+                    name_excel_file = input()
+                    parsing_GM(location, radius, keyword, name_excel_file)
         else:
             break
     print('Программа закончила работу')
