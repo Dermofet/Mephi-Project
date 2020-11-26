@@ -122,6 +122,7 @@ def parsing_GM(location, radius, keyword, name_excel_file):
     capital = []
     assets = []
     driver.get('https://bo.nalog.ru/')
+    time.sleep(5)
     for i, t in zip(data['dict_name'], data['dict_address']):
         time.sleep(5)
         button_extended_search = driver.find_elements_by_tag_name('button')[3]
