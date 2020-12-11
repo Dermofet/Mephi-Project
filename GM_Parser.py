@@ -79,28 +79,7 @@ def open_excel_file(data, commercial_inf, name_excel_file):
     for t, i in enumerate(commercial_inf['assets']):
         sheet.write(t + 1, 9, label=i)
     wb.save(name_excel_file)
-
-
-# def write_data_txt(data, inn):
-#     file = open('ПП.txt', 'w', encoding='utf-8')
-#     for i in data['dict_name']:
-#         file.write("%s\n" % i)
-#     file.write("\n")
-#     for i in data['dict_address']:
-#         file.write("%s\n" % i)
-#     file.write("\n")
-#     for i in data['dict_place_id']:
-#         file.write("%s\n" % i)
-#     file.write("\n")
-#     for i in data['dict_rating']:
-#         file.write("%s\n" % i)
-#     file.write("\n")
-#     for i in data['dict_user_ratings_total']:
-#         file.write("%s\n" % i)
-#     for i in inn:
-#         file.write("%s\n" % i)
-#     file.close()
-
+    
 
 def check(name):
     en_let = 0
