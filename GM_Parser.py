@@ -84,7 +84,7 @@ def open_excel_file(data, commercial_inf, name_excel_file):
 def check(name):
     en_let = 0
     if re.search(r'[a-z]', name):
-        en_let = en_let + 1
+        en_let += 1
     print('en_let = ', en_let)
     return en_let
 
@@ -158,53 +158,52 @@ def main():
     while True:
         print('Хотите продолжить? Yes/No')
         answer = input()
+        if answer != 'Yes':
+            break
+        answer = None
+        print('Хотите изменить только ключевое слово? Yes/No')
+        answer = input()
         if answer == 'Yes':
+            keyword = None
+            print('Введите ключевое слово')
+            keyword = input()
+            print('Введите названия Excel-файла вместе с расширением файла (.xls). Например "GM_Parser.xls"')
+            name_excel_file = input()
+            parsing_GM(location, radius, keyword, name_excel_file)
+        else:
             answer = None
-            print('Хотите изменить только ключевое слово? Yes/No')
+            print('Если хотите изменить значений всех переменных - напишите "Yes" (без кавычек).')
+            print('Если хотите изменить только координаты точки - напишите "location" (без кавычек).')
+            print('Если хотите изменить радиус - напишите "radius" (без кавычек).')
+            print('ЕСли хотите изменить и координаты точки и радиус поиска - напишите "location and radius" (без кавычек).')
             answer = input()
             if answer == 'Yes':
+                location = None
+                radius = None
                 keyword = None
+                print('Введите через запятую координаты точки, относительно которой будет произведен поиск')
+                location = input()
+                print('Введите радиус поиска')
+                radius = input()
                 print('Введите ключевое слово')
                 keyword = input()
                 print('Введите названия Excel-файла вместе с расширением файла (.xls). Например "GM_Parser.xls"')
                 name_excel_file = input()
                 parsing_GM(location, radius, keyword, name_excel_file)
-            else:
-                answer = None
-                print('Если хотите изменить значений всех переменных - напишите "Yes" (без кавычек).')
-                print('Если хотите изменить только координаты точки - напишите "location" (без кавычек).')
-                print('Если хотите изменить радиус - напишите "radius" (без кавычек).')
-                print('ЕСли хотите изменить и координаты точки и радиус поиска - напишите "location and radius" (без кавычек).')
-                answer = input()
-                if answer == 'Yes':
-                    location = None
-                    radius = None
-                    keyword = None
-                    print('Введите через запятую координаты точки, относительно которой будет произведен поиск')
-                    location = input()
-                    print('Введите радиус поиска')
-                    radius = input()
-                    print('Введите ключевое слово')
-                    keyword = input()
-                    print('Введите названия Excel-файла вместе с расширением файла (.xls). Например "GM_Parser.xls"')
-                    name_excel_file = input()
-                    parsing_GM(location, radius, keyword, name_excel_file)
-                if answer == 'location':
-                    location = None
-                    print('Введите через запятую координаты точки, относительно которой будет произведен поиск')
-                    location = input()
-                    print('Введите названия Excel-файла вместе с расширением файла (.xls). Например "GM_Parser.xls"')
-                    name_excel_file = input()
-                    parsing_GM(location, radius, keyword, name_excel_file)
-                if answer == 'radius':
-                    radius = None
-                    print('Введите радиус поиска')
-                    radius = input()
-                    print('Введите названия Excel-файла вместе с расширением файла (.xls). Например "GM_Parser.xls"')
-                    name_excel_file = input()
-                    parsing_GM(location, radius, keyword, name_excel_file)
-        else:
-            break
+            if answer == 'location':
+                location = None
+                print('Введите через запятую координаты точки, относительно которой будет произведен поиск')
+                location = input()
+                print('Введите названия Excel-файла вместе с расширением файла (.xls). Например "GM_Parser.xls"')
+                name_excel_file = input()
+                parsing_GM(location, radius, keyword, name_excel_file)
+            if answer == 'radius':
+                radius = None
+                print('Введите радиус поиска')
+                radius = input()
+                print('Введите названия Excel-файла вместе с расширением файла (.xls). Например "GM_Parser.xls"')
+                name_excel_file = input()
+                parsing_GM(location, radius, keyword, name_excel_file)
     print('Программа закончила работу')
 
 
